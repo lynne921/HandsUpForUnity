@@ -6,13 +6,12 @@ using UnityEngine.UI;
 
 public class OpeneingManager : MonoBehaviour
 {
-    public GameObject[] Pages = new GameObject[2];
+    public GameObject[] Pages = new GameObject[4];
 
     private UserData userData;
 
     public InputField[] userDatas; // for sign in
     public InputField[] userDataField; // for sign up
-
 
     public void OnClickSignUpPageBtn()
     {
@@ -24,18 +23,24 @@ public class OpeneingManager : MonoBehaviour
         SetPageActive(0);
     }
 
-    private void SetPageActive(int index) // 0 : DefaultPage, 1 : SignUpPage
+    public void OnClickWithoutSignPageBtn()
     {
-        if(index == 1)
+        SetPageActive(2);
+        GameObject.Find("NickNameBtn").GetComponentInChildren<Text>().text = "·Î±×ÀÎ";
+    }
+
+    public void OnClickNicknamePageBtn()
+    {
+        SetPageActive(3);
+    }
+
+    private void SetPageActive(int index) // 0 : DefaultPage, 1 : SignUpPage 2 : MainPage 3 : EditPage
+    {
+        for (int i = 0; i < Pages.Length; i++)
         {
-            Pages[0].SetActive(false);
-            Pages[1].SetActive(true);
+            Pages[i].SetActive(false);
         }
-        else
-        {
-            Pages[1].SetActive(false);
-            Pages[0].SetActive(true);
-        }
+        Pages[index].SetActive(true);
     }
 
     //TO-DO : user email form checking
@@ -62,7 +67,7 @@ public class OpeneingManager : MonoBehaviour
 
         var req = JsonConvert.SerializeObject(userData);
         Debug.Log(req);
-        StartCoroutine(DataManager.sendDataToServer("/user/signup", req, (raw) =>
+        StartCoroutine(DataManager.sendDataToServer("/auth/signup", req, (raw) =>
         {
             Debug.Log("sign up user data : \n" + req);
             Debug.Log("result of sign up : " + raw);
@@ -88,12 +93,13 @@ public class OpeneingManager : MonoBehaviour
     private void SignIn()
     {
         userData = new UserData();
-        userData.email = userDatas[0].text;
-        userData.password = userDatas[1].text;
+        userData.userName = userDatas[0].text;
+        userData.email = userDatas[1].text;
+        userData.password = userDatas[2].text;
 
         var req = JsonConvert.SerializeObject(userData);
         Debug.Log(req);
-        StartCoroutine(DataManager.sendDataToServer("/user/signin", req, (raw) =>
+        StartCoroutine(DataManager.sendDataToServer("/auth/signin", req, (raw) =>
         {
             Debug.Log("sign in user data : \n" + req);
             Debug.Log("user's name : " + raw);
@@ -109,10 +115,38 @@ public class OpeneingManager : MonoBehaviour
             else
             {
                 Debug.Log("Sucessful Sign In!");
-                userData.name = raw;
-                //TO-DO : Scene change to game scene
+                userData.userName = raw;
+                SetPageActive(2);
+
+                GameObject.Find("NickNameBtn").GetComponentInChildren<Text>().text = userData.userName;
             }
 
         }));
     }
+ 
+    private void EditInfo()
+    {
+        userData = new UserData();
+        userData.userName = userDataField[0].text;
+        userData.email = userDataField[1].text;
+        userData.password = userDataField[2].text;
+
+        var req = JsonConvert.SerializeObject(userData);
+        Debug.Log(req);
+
+        GameObject.Find("IDField").GetComponentInChildren<Text>().text = userData.email;
+        GameObject.Find("NickNameField").GetComponentInChildren<Text>().text = userData.userName;
+
+        StartCoroutine(DataManager.sendDataToServer("/auth/user/update", req, (raw) =>
+        {
+            Debug.Log("edit user data : \n" + req);
+            Debug.Log("user's info : " + raw);
+
+            userData.userName = raw;
+            //userData.email = raw;
+            //userData.password = raw;
+            SetPageActive(2);
+        }));
+    }
+
 }
