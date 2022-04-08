@@ -53,7 +53,7 @@ public class OpeneingManager : MonoBehaviour
             Debug.Log("PW is diffrent with Confirm PW.");
             return;
         }
-        
+
         SignUp();
     }
 
@@ -62,12 +62,12 @@ public class OpeneingManager : MonoBehaviour
     {
         userData = new UserData();
         userData.email = userDataField[0].text;
-        userData.userName = userDataField[1].text; 
-        userData.password = userDataField[2].text; 
+        userData.userName = userDataField[1].text;
+        userData.password = userDataField[2].text;
 
         var req = JsonConvert.SerializeObject(userData);
         Debug.Log(req);
-        StartCoroutine(DataManager.sendDataToServer("/user/signup", req, (raw) =>
+        StartCoroutine(DataManager.sendDataToServer("/auth/signup", req, (raw) =>
         {
             Debug.Log("sign up user data : \n" + req);
             Debug.Log("result of sign up : " + raw);
@@ -93,12 +93,13 @@ public class OpeneingManager : MonoBehaviour
     private void SignIn()
     {
         userData = new UserData();
-        userData.email = userDatas[0].text;
-        userData.password = userDatas[1].text;
+        userData.userName = userDatas[0].text;
+        userData.email = userDatas[1].text;
+        userData.password = userDatas[2].text;
 
         var req = JsonConvert.SerializeObject(userData);
         Debug.Log(req);
-        StartCoroutine(DataManager.sendDataToServer("/user/signin", req, (raw) =>
+        StartCoroutine(DataManager.sendDataToServer("/auth/signin", req, (raw) =>
         {
             Debug.Log("sign in user data : \n" + req);
             Debug.Log("user's name : " + raw);
@@ -115,13 +116,14 @@ public class OpeneingManager : MonoBehaviour
             {
                 Debug.Log("Sucessful Sign In!");
                 userData.userName = raw;
-                GameObject.Find("NickNameBtn").GetComponentInChildren<Text>().text = userData.userName;
                 SetPageActive(2);
+
+                GameObject.Find("NickNameBtn").GetComponentInChildren<Text>().text = userData.userName;
             }
 
         }));
     }
- 
+
     private void EditInfo()
     {
         userData = new UserData();
@@ -135,7 +137,7 @@ public class OpeneingManager : MonoBehaviour
         GameObject.Find("IDField").GetComponentInChildren<Text>().text = userData.email;
         GameObject.Find("NickNameField").GetComponentInChildren<Text>().text = userData.userName;
 
-        StartCoroutine(DataManager.sendDataToServer("/user/update", req, (raw) =>
+        StartCoroutine(DataManager.sendDataToServer("/auth/user/update", req, (raw) =>
         {
             Debug.Log("edit user data : \n" + req);
             Debug.Log("user's info : " + raw);
